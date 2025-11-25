@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulletin - App Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .phone-frame {
+            width: 380px;
+            height: 800px;
+            background: #fff;
+            border-radius: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 12px solid #000;
+            position: relative;
+        }
+
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 25px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+
+        .status-bar {
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .screen-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .card {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .card-content {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .weather-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .temp {
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        .weather-desc {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px;
+            font-size: 11px;
+            color: #999;
+            flex: 1;
+            height: 100%;
+            justify-content: center;
+        }
+
+        .tab-item.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .icon {
+            font-size: 24px;
+        }
+
+        .badge {
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+
+        .event-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-right: 5px;
+        }
+
+        .severity-high {
+            border-left: 4px solid #ff4757;
+        }
+
+        .severity-medium {
+            border-left: 4px solid #ffa502;
+        }
+
+        .severity-low {
+            border-left: 4px solid #2ed573;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 📡 🔋</span>
+        </div>
+
+        <div class="screen-container">
+            <!-- Home Screen -->
+            <div class="screen active" id="home-screen">
+                <h1>Bulletin</h1>
+                <div class="card">
+                    <div class="card-title">🌍 Local News</div>
+                    <div class="card-content">Stay informed with latest announcements</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">⚡ Quick Actions</div>
+                    <div class="card-content">Check weather • View traffic • Find events</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🔔 3 Alerts</div>
+                    <div class="card-content">2 weather alerts • 1 traffic update</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📍 Your Location</div>
+                    <div class="card-content">San Francisco, CA • 72°F • Clear</div>
+                </div>
+            </div>
+
+            <!-- Weather Screen -->
+            <div class="screen" id="weather-screen">
+                <h1>Weather</h1>
+                <div class="weather-card">
+                    <div class="temp">72°</div>
+                    <div class="weather-desc">Partly Cloudy</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Today</div>
+                    <div class="card-content">High: 75°F • Low: 62°F • Wind: 8mph</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Tomorrow</div>
+                    <div class="card-content">High: 70°F • Low: 58°F • Chance of Rain: 30%</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">This Week</div>
+                    <div class="card-content">Mon 75° • Tue 73° • Wed 68° • Thu 70°</div>
+                </div>
+            </div>
+
+            <!-- Traffic Screen -->
+            <div class="screen" id="traffic-screen">
+                <h1>Traffic</h1>
+                <div class="card">
+                    <div class="card-title">🟢 Normal Traffic</div>
+                    <div class="card-content">Bay Bridge • Expected: 15 min</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🟡 Moderate Traffic</div>
+                    <div class="card-content">101 North • Expected: 25 min</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Routes Near You</div>
+                    <div class="card-subtitle">Golden Gate Bridge</div>
+                    <div class="card-content">Northbound • 10 minutes</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Recent Routes</div>
+                    <div class="card-content">• Work (5.2 mi away)\n• Gym (2.3 mi away)</div>
+                </div>
+            </div>
+
+            <!-- Events Screen -->
+            <div class="screen" id="events-screen">
+                <h1>Events</h1>
+                <div class="card">
+                    <div class="card-title">Tech Conference 2024</div>
+                    <div class="card-subtitle">📍 Moscone Center • Tomorrow 9:00 AM</div>
+                    <div><span class="event-tag">Technology</span><span class="event-tag">Conference</span></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Farmers Market</div>
+                    <div class="card-subtitle">📍 Ferry Plaza • Saturday 8:00 AM</div>
+                    <div><span class="event-tag">Market</span></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Jazz Night</div>
+                    <div class="card-subtitle">📍 Blue Note • Friday 8:00 PM</div>
+                    <div><span class="event-tag">Music</span><span class="event-tag">Entertainment</span></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Community Cleanup</div>
+                    <div class="card-subtitle">📍 Golden Gate Park • Sunday 10:00 AM</div>
+                    <div><span class="event-tag">Community</span></div>
+                </div>
+            </div>
+
+            <!-- Alerts Screen -->
+            <div class="screen" id="alerts-screen">
+                <h1>Alerts</h1>
+                <div class="card severity-high">
+                    <div class="card-title">🚨 High Priority</div>
+                    <div class="card-subtitle">Flash Flood Warning</div>
+                    <div class="card-content">Effective until 6:00 PM today</div>
+                </div>
+                <div class="card severity-medium">
+                    <div class="card-title">⚠️ Medium Priority</div>
+                    <div class="card-subtitle">Traffic Congestion</div>
+                    <div class="card-content">101 North: Heavy congestion expected</div>
+                </div>
+                <div class="card severity-low">
+                    <div class="card-title">ℹ️ Low Priority</div>
+                    <div class="card-subtitle">Event Reminder</div>
+                    <div class="card-content">Tech Conference starts in 2 hours</div>
+                </div>
+                <div class="card severity-low">
+                    <div class="card-title">ℹ️ Information</div>
+                    <div class="card-subtitle">Maintenance Notification</div>
+                    <div class="card-content">System maintenance: Tonight 2-4 AM</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-bar">
+            <div class="tab-item active" data-screen="home-screen" onclick="switchScreen(this)">
+                <div class="icon">🏠</div>
+                <div>Home</div>
+            </div>
+            <div class="tab-item" data-screen="weather-screen" onclick="switchScreen(this)">
+                <div class="icon">⛅</div>
+                <div>Weather</div>
+            </div>
+            <div class="tab-item" data-screen="traffic-screen" onclick="switchScreen(this)">
+                <div class="icon">🚗</div>
+                <div>Traffic</div>
+            </div>
+            <div class="tab-item" data-screen="events-screen" onclick="switchScreen(this)">
+                <div class="icon">📅</div>
+                <div>Events</div>
+            </div>
+            <div class="tab-item" data-screen="alerts-screen" onclick="switchScreen(this)">
+                <div class="icon">🔔</div>
+                <div>Alerts</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchScreen(element) {
+            // Remove active class from all tabs and screens
+            document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+
+            // Add active class to clicked tab and corresponding screen
+            element.classList.add('active');
+            const screenId = element.getAttribute('data-screen');
+            document.getElementById(screenId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
