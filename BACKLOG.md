@@ -175,5 +175,38 @@ Thumbs.db
 ---
 
 Repository: https://github.com/ThePhoenixAgency/Bulletin
+
+---
+
+## AUTHENTICATION CONFIGURATION - MULTI-PROVIDER OAUTH & MFA
+
+**Status**: In Progress
+**Priority**: HIGH
+**Notes**: Configuration du système d'authentification Supabase avec multiples fournisseurs OAuth2 et d'authentification multi-facteurs.
+
+### Social OAuth2 Providers (En cours de configuration)
+
+- [ ] **Apple OAuth** - Client IDs, Secret Key (En attente des credentials)
+- [ ] **Google OAuth** - Client ID, Client Secret (En attente des credentials)
+- [ ] **GitHub OAuth** - Client ID, Client Secret (En attente des credentials)
+- [ ] **GitLab OAuth** - Client ID, Client Secret (En attente des credentials)
+- [ ] **Facebook OAuth** - App ID, App Secret (En attente des credentials)
+- [ ] **Notion OAuth** - Client ID, Client Secret (En attente des credentials)
+- [ ] **LinkedIn (OIDC)** - Client ID, Client Secret (En attente des credentials)
+- [ ] **Azure/Microsoft OAuth** - Tenant ID (x2), Client ID, Client Secret (En attente - vérifier lequel utiliser)
+
+### Authentication Methods
+
+- [ ] **Phone Authentication** - SMS Provider (Twilio/autre) - En attente de configuration
+- [ ] **Web3 Wallet** - BACKLOG - à faire quand App ID sera disponible
+
+### Related Tasks
+
+- [x] Documentation des bonnes pratiques (BEST_PRACTICES.md)
+- [x] Récupération des noms de clés depuis Supabase
+- [ ] Configuration dans Supabase Dashboard
+- [ ] Ajout des secrets dans GitHub Actions
+- [ ] Test d'authentification pour chaque fournisseur
+- [ ] Mise à jour de la documentation utilisateur
 Owner: EthanThePhoenix38 (The Phoenix Agency)
 Branch: main
