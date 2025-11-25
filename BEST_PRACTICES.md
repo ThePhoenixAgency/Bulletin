@@ -355,5 +355,153 @@ test('should have no accessibility violations', async () => {
 > 👥 Maintenu par l'équipe Phoenix Agency
     
     # Permissions Policy (anciennement Feature-Policy)
+
+---
+
+## 🔐 Authentification & Gestion des Credentials
+
+### Bonnes Pratiques Essentielles
+
+#### 1. **JAMAIS de credentials en dur dans le code**
+
+✅ **BON:**
+```javascript
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const apiKey = process.env.API_KEY_SUPABASE;
+```
+
+❌ **MAUVAIS:**
+```javascript
+const googleClientId = 'YOUR_ACTUAL_CLIENT_ID_12345'; // NE JAMAIS FAIRE!
+const apiKey = 'sk-proj-xxxxx'; // Credential expose!
+```
+
+#### 2. **Variables d'Environnement**
+
+- Stocker TOUS les credentials sensibles dans `.env.local` ou `.env` (JAMAIS commiter!)
+- Utiliser `.env.example` pour documenter les variables SANS les valeurs
+- Gérer les secrets via GitHub Actions Secrets ou TrueKey
+
+#### 3. **Noms de Clés Standardisés**
+
+**Format pour GitHub Secrets & Supabase:**
+```
+[PROVIDER]_CLIENT_ID
+[PROVIDER]_CLIENT_SECRET
+[PROVIDER]_[CUSTOM_FIELD]
+```
+
+**Exemples:**
+- `GOOGLE_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
+- `APPLE_CLIENT_IDS`
+- `AZURE_TENANT_ID`
+- `FACEBOOK_APP_ID`
+
+#### 4. **Sécurité des Credentials OAuth2**
+
+**À chaque création de credentials:**
+- ✅ Télécharger le fichier JSON depuis le provider
+- ✅ Copier les valeurs dans TrueKey ou Password Manager
+- ✅ Ne JAMAIS laisser les fichiers JSON traîner sur l'ordinateur
+- ✅ Utiliser des Authorized Redirect URIs spécifiques
+- ✅ Rotationner les secrets régulièrement (tous les 3-6 mois)
+- ❌ NE PAS partager les credentials par email/Slack/Discord
+
+#### 5. **Supabase Auth Configuration**
+
+**Dans Supabase Dashboard UNIQUEMENT:**
+- [x] Client IDs pour authentification sociale
+- [x] Client Secrets pour backend
+- [x] Callback URLs correctement configurées
+- [x] Domains autorisés spécifiés
+
+**Les vrais noms de clés dans Supabase:**
+- `Client ID` et `Client Secret` (OAuth2 standard)
+- `App ID` et `App Secret` (Facebook)
+- `Client IDs` (liste CSV - Apple)
+- `Secret Key` ou `Private Key` (format spécifique par provider)
+
+#### 6. **Gestion Multi-Environnements**
+
+**Dev**
+- Utiliser credentials de dev/sandbox
+- Autoriser localhost:3000, localhost:5173
+
+**Staging**
+- Credentials de staging distincts
+- Domain: staging.example.com
+
+**Production**
+- Credentials de production + secrets rotating
+- Domain: app.example.com seulement
+- Audit logs activés
+
+#### 7. **Checklist Configuration OAuth2**
+
+- [ ] Credentials obtenus depuis provider officiel
+- [ ] Valeurs stockées dans TrueKey/Password Manager
+- [ ] Variables d'environnement crées correctement
+- [ ] GitHub Actions Secrets configurés (noms exacts)
+- [ ] Supabase Dashboard mis à jour avec les bons values
+- [ ] Authorized Redirect URLs configurées dans le provider
+- [ ] Tests d'authentification fonctionnels
+- [ ] Documentation mise à jour (SANS les valeurs)
+- [ ] Audit log de qui a accédé aux secrets
+
+#### 8. **Rotation des Secrets**
+
+**Procédure obligatoire tous les 6 mois:**
+1. Générer nouveau Client Secret dans le provider
+2. Tester avec le nouveau secret avant de switcher
+3. Mettre à jour GitHub Actions Secrets
+4. Mettre à jour Supabase Dashboard
+5. Invalider l'ancien secret dans le provider
+6. Documenter la rotation dans CHANGELOG.md
+
+#### 9. **Incident Response - Credential Compromise**
+
+Si un credential est exposé:
+1. **IMMEDIATEMENT** invalider la clé dans le provider
+2. Générer nouveau credential
+3. Mettre à jour partout (GitHub, Supabase, TrueKey)
+4. Auditer les logs pour usage non-autorisé
+5. Documenter l'incident
+
+#### 10. **Documentation Requise**
+
+**Ne JAMAIS documenter:**
+- ❌ Client IDs complets
+- ❌ Client Secrets
+- ❌ API Keys
+- ❌ Exemples avec vrais credentials
+
+**Documenter TOUJOURS:**
+- ✅ Noms des variables d'environnement
+- ✅ Format attendu (UUID, string, etc)
+- ✅ Où obtenir chaque credential (lien provider)
+- ✅ Procédure de configuration
+- ✅ Noms exacts pour GitHub Secrets
+
+### Providers Supportés & Credentials
+
+| Provider | Credentials Nécessaires | Durée de Validité |
+|----------|------------------------|-------------------|
+| Google | Client ID, Client Secret | Illimité |
+| GitHub | Client ID, Client Secret | Illimité |
+| Apple | Client IDs, Secret Key (JWT) | 6 mois |
+| Facebook | App ID, App Secret | Illimité |
+| GitLab | Client ID, Client Secret | Illimité |
+| Notion | Client ID, Client Secret | Illimité |
+| LinkedIn | Client ID, Client Secret | Illimité |
+| Azure/Microsoft | Tenant ID, Client ID, Client Secret | Illimité |
+| SMS (Twilio) | Account SID, Auth Token | Illimité |
+
+### Ressources de Sécurité
+
+- [OWASP - Secrets Management](https://owasp.org/)
+- [GitHub - Encrypted Secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets)
+- [Supabase - Auth Security](https://supabase.com/docs/guides/auth)
+- [TrueKey - Password Manager](https://www.truekey.com/)
     response.headers['Permissions-Policy'] = (
         "geolocation=()
