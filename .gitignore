@@ -137,3 +137,15 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+
+# IDE Configuration Files (CRITICAL - NEVER COMMIT)
+.cursorrules
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# .prettierrc and .eslintrc are development tools (can commit)
