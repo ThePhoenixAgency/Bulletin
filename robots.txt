@@ -1,0 +1,69 @@
+# Bulletin Application - SEO Optimization & Anti-Scraping
+# Strategic bot allowance for top search engine ranking
+
+# Google - Full access with crawl optimizations
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+Request-rate: 1/2s
+
+# Bing - Full access
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# DuckDuckGo - Full access
+User-agent: DuckDuckBot
+Allow: /
+
+# Yandex - Full access
+User-agent: YandexBot
+Allow: /
+
+# Block all scrapers and bad bots
+User-agent: *
+Disallow: /
+Crawl-delay: 0
+
+# Specific bot blocking (scrapers, SEO tools, analytics bots)
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: Dataprovider.com
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: MojeekBot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+User-agent: AntScanBot
+Disallow: /
+
+User-agent: Scrapy
+Disallow: /
+
+User-agent: curl
+Disallow: /
+
+User-agent: Python-requests
+Disallow: /
+
+User-agent: Java
+Disallow: /
+
+User-agent: libwww-perl
+Disallow: /
+
+# Sitemap location for search engines
+Sitemap: https://thephoenixagency.github.io/Bulletin/sitemap.xml
