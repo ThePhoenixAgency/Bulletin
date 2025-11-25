@@ -83,6 +83,74 @@ export const AuthService = {
     // return data?.role === 'admin' || data?.role === 'owner';
     return false;
   }
+
+    /**
+   * Envoie un SMS via l'API SMS-TextBelt-API
+   * @see https://github.com/ThePhoenixAgency/SMS-TextBelt-API
+   * @param {string} phoneNumber - Numero de telephone
+   * @param {string} message - Message a envoyer
+   * @param {string} carrier - Operateur mobile (optionnel)
+   * @returns {Promise<Object>} Resultat de l'envoi
+   */
+  async sendSMS(phoneNumber, message, carrier = null) {
+    // TODO: Configurer SMS_TEXTBELT_API_URL dans les GitHub Secrets
+    const SMS_API_URL = process.env.SMS_TEXTBELT_API_URL || 'http://localhost:9090';
+    
+    try {
+      const response = await fetch(`${SMS_API_URL}/text`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          number: phoneNumber,
+          message: message,
+          ...(carrier && { carrier }),
+        }),
+      });
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Erreur SMS-TextBelt-API:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Envoie un code OTP par SMS pour verification
+   * @param {string} phoneNumber - Numero de telephone
+   * @returns {Promise<Object>} Code OTP genere et resultat envoi
+   */
+  async sendOTP(phoneNumber) {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const message = `Votre code de verification Bulletin est: ${otp}`;
+    
+    const result = await this.sendSMS(phoneNumber, message);
+    
+    // TODO: Stocker le code OTP dans Supabase pour verification ulterieure
+    // await supabase.from('otp_codes').insert({ phone: phoneNumber, code: otp, expires_at: ... });
+    
+    return { ...result, otp };
+  },
+
+  /**
+   * Verifie un code OTP
+   * @param {string} phoneNumber - Numero de telephone
+   * @param {string} code - Code OTP saisi
+   * @returns {Promise<boolean>} True si code valide
+   */
+  async verifyOTP(phoneNumber, code) {
+    // TODO: Implementer la verification avec Supabase
+    // const { data } = await supabase.from('otp_codes')
+    //   .select('*')
+    //   .eq('phone', phoneNumber)
+    //   .eq('code', code)
+    //   .gt('expires_at', new Date().toISOString())
+    //   .single();
+    // return !!data;
+    return false;
+  },
 };
 
 export default AuthService;
