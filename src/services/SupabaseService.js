@@ -9,8 +9,8 @@ import { createClient } from '@supabase/supabase-js';
 // TODO: Décommentez et configurez avec vos vraies valeurs
 /*
 const supabase = createClient(
-  'https://blfkhqsuqggpklsueolq.supabase.co',
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.URL,
+  process.env.SERVICE_KEY
 );
 */
 
