@@ -505,3 +505,260 @@ Si un credential est exposé:
 - [TrueKey - Password Manager](https://www.truekey.com/)
     response.headers['Permissions-Policy'] = (
         "geolocation=()
+
+
+---
+
+## 🚦 Rate Limiting & Protection DDoS
+
+### Pourquoi c'est CRITIQUE
+
+- Prévient les attaques DDoS (Denial of Service)
+- Protège votre API contre les abus
+- Évite que l'app crash sous une charge massive
+- Réduit les coûts d'infrastructure
+
+### Implémentation avec Supabase + Express
+
+```javascript
+const rateLimit = require('express-rate-limit');
+
+// Rate Limiting global - 100 requêtes par 15 minutes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limite 100 requêtes par windowMs
+  message: 'Trop de requêtes, veuillez réessayer plus tard',
+  standardHeaders: true, // Retourne info dans `RateLimit-*` headers
+  legacyHeaders: false, // Désactive les headers `X-RateLimit-*`
+});
+
+// Rate Limiting strict pour authentification - 5 tentatives par 15 min
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true, // Ne compte que les erreurs
+  message: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.',
+});
+
+// Rate Limiting pour API endpoints sensibles - 20 req/min
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 20,
+  message: 'Limite API dépassée',
+});
+
+app.use(limiter); // Appliquer globalement
+app.post('/login', authLimiter, handleLogin);
+app.get('/api/events', apiLimiter, getEvents);
+```
+
+### Rate Limiting côté Client (React Native)
+
+```javascript
+// Throttle/Debounce pour les appels API
+import { debounce } from 'lodash';
+
+const debouncedSearch = debounce(async (query) => {
+  try {
+    const response = await fetch(`/api/search?q=${query}`);
+    // ...
+  } catch (error) {
+    if (error.status === 429) { // Too Many Requests
+      console.warn('Limite dépassée, réessayez dans quelques secondes');
+    }
+  }
+}, 500); // Attend 500ms après la dernière frappe
+
+// Retry logic avec exponential backoff
+const retryRequest = async (fn, maxRetries = 3) => {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (error.status === 429 && i < maxRetries - 1) {
+        const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
+};
+```
+
+### Configuration par Endpoint
+
+| Endpoint | Limite | Fenêtre | Raison |
+|----------|--------|---------|--------|
+| Login | 5 req | 15 min | Prévient brute force |
+| API Weather | 100 req | 15 min | Consomme peu de ressources |
+| API Traffic | 50 req | 15 min | Appels plus lourds |
+| API Events | 30 req | 15 min | Accès DB intensif |
+| File Upload | 10 req | 1 h | Protection storage |
+
+---
+
+## 📊 Gestion des Erreurs & Codes HTTP
+
+### Codes HTTP Standards à Respecter
+
+#### 2xx - Succès
+- **200 OK**: Requête réussie, réponse contient les données
+- **201 Created**: Ressource créée (POST)
+- **204 No Content**: Succès sans contenu (DELETE)
+
+#### 4xx - Erreur Client
+- **400 Bad Request**: Paramètres invalides
+- **401 Unauthorized**: Authentification requise
+- **403 Forbidden**: Authentifié mais pas autorisé
+- **404 Not Found**: Ressource n'existe pas
+- **409 Conflict**: Conflit (ex: doublon)
+- **429 Too Many Requests**: Rate limit dépassé
+
+#### 5xx - Erreur Serveur
+- **500 Internal Server Error**: Erreur non gérée
+- **502 Bad Gateway**: Serveur inaccessible
+- **503 Service Unavailable**: Service temporairement indisponible
+
+### Implémentation Error Handling
+
+```javascript
+// Middleware de gestion d'erreurs globale
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  
+  const errorResponse = {
+    success: false,
+    error: {
+      code: err.code || 'UNKNOWN_ERROR',
+      message: err.message || 'Une erreur est survenue',
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    }
+  };
+  
+  res.status(statusCode).json(errorResponse);
+});
+
+// Exemple d'endpoint avec gestion d'erreurs
+app.get('/api/events/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_ID', message: 'ID requis' }
+      });
+    }
+    
+    const event = await supabase
+      .from('events')
+      .select()
+      .eq('id', id)
+      .single();
+    
+    if (!event.data) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Événement non trouvé' }
+      });
+    }
+    
+    res.status(200).json({ success: true, data: event.data });
+  } catch (error) {
+    console.error('Erreur API:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Erreur serveur' }
+    });
+  }
+});
+```
+
+### Gestion d'Erreurs React Native
+
+```javascript
+// Service API avec gestion d'erreurs
+const apiCall = async (endpoint, options = {}) => {
+  try {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...options.headers
+      },
+      ...options
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      // Gestion spécifique par code d'erreur
+      switch (response.status) {
+        case 400:
+          throw new Error(`Requête invalide: ${data.error.message}`);
+        case 401:
+          // Refresh token ou redirection login
+          await refreshToken();
+          throw new Error('Session expirée, reconnexion nécessaire');
+        case 403:
+          throw new Error('Accès refusé');
+        case 404:
+          throw new Error('Ressource non trouvée');
+        case 429:
+          throw new Error('Trop de requêtes. Réessayez dans quelques instants.');
+        case 500:
+          throw new Error('Erreur serveur. Nos équipes ont été notifiées.');
+        default:
+          throw new Error(data.error?.message || 'Erreur inconnue');
+      }
+    }
+    
+    return { success: true, data: data.data };
+  } catch (error) {
+    console.error(`Erreur API [${endpoint}]:`, error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Utilisation dans component
+const getEvents = async () => {
+  setLoading(true);
+  const result = await apiCall('/api/events');
+  
+  if (!result.success) {
+    setError(result.error);
+    // Afficher toast/snackbar avec le message d'erreur
+    showNotification(result.error, 'error');
+  } else {
+    setEvents(result.data);
+  }
+  setLoading(false);
+};
+```
+
+### Logging des Erreurs
+
+```javascript
+// Enregistrer les erreurs critiques
+const logError = (error, context) => {
+  console.error(`[${new Date().toISOString()}] ${context}:`, error);
+  
+  // Envoyer à service monitoring (Sentry, etc)
+  if (process.env.NODE_ENV === 'production') {
+    // Sentry.captureException(error, { tags: { context } });
+    // Ou envoyer à votre système de logging
+  }
+};
+```
+
+### Checklist Gestion d'Erreurs
+
+- ✅ Tous les endpoints retournent le bon code HTTP
+- ✅ Messages d'erreur clairs pour l'utilisateur
+- ✅ Pas de stack traces visibles en production
+- ✅ Retry logic pour erreurs temporaires (429, 503)
+- ✅ Logging des erreurs 5xx pour debugging
+- ✅ Rate limiting activé sur tous les endpoints
+- ✅ Timeout défini pour les requêtes longues
+- ✅ Circuit breaker pour services externes
